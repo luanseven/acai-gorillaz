@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Açaí Gorillaz — Clone Estático</title>
+  <style>
+    :root{--accent:#7b1fa2;--accent-2:#4a148c;--bg:#f8f6fb;--card:#ffffff;--muted:#777}
+    *{box-sizing:border-box}
+    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0;background:var(--bg);color:#111}
+    header{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:46px;height:46px;border-radius:10px;background:#fff33a;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent-2)}
+    .brand h1{font-size:18px;margin:0}
+    .actions{display:flex;gap:10px;align-items:center}
+    main{padding:20px;display:flex;gap:20px}
+    .left{flex:1}
+    .hero{background:linear-gradient(180deg,rgba(255,255,255,0.08),transparent);padding:18px;border-radius:12px;margin-bottom:18px;display:flex;align-items:center;gap:18px}
+    .hero img{width:120px;height:120px;object-fit:cover;border-radius:10px}
+    .hero h2{margin:0;font-size:20px}
+    .menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+    .card{background:var(--card);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,0.06);display:flex;flex-direction:column}
+    .card img{width:100%;height:140px;object-fit:cover;border-radius:8px}
+    .card h3{margin:10px 0 6px 0;font-size:16px}
+    .price-row{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+    .btn{background:var(--accent);color:#fff;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    aside.cart{width:340px;background:linear-gradient(180deg,#fff,#f6f4fb);padding:16px;border-radius:12px;box-shadow:0 6px 24px rgba(16,24,40,0.08)}
+    .cart h3{margin:0 0 12px 0}
+    .cart-list{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow:auto;padding-right:6px}
+    .cart-item{display:flex;gap:12px;align-items:center}
+    .cart-item img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .qty{display:flex;gap:6px;align-items:center}
+    .muted{color:var(--muted);font-size:13px}
+    footer.small{padding:12px;text-align:center;color:var(--muted);font-size:13px}
+    @media(max-width:900px){main{flex-direction:column}aside.cart{width:100%}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">AG</div>
+      <div>
+        <h1>Açaí Gorillaz — Vila Missionária</h1>
+        <div class="muted">Entrega rápida • Aberto agora</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="scrollToMenu()">Cardápio</button>
+      <button class="btn" onclick="toggleCart()">Carrinho (<span id="cart-count">0</span>)</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="left">
+      <section class="hero">
+        <img src="https://images.unsplash.com/photo-1562440499-64f8a4d9d6a8?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder" alt="Açaí bowl" />
+        <div>
+          <h2>Açaí Gorillaz</h2>
+          <p class="muted">Açaí autêntico, toppings à vontade e entrega rápida — feito com carinho na Vila Missionária.</p>
+          <div style="margin-top:8px"><strong>Aberto • Entrega: 30-45 min</strong></div>
+        </div>
+      </section>
+
+      <section id="menu">
+        <h2 style="margin:0 0 12px 0">Cardápio</h2>
+        <div class="menu-grid" id="menu-grid">
+          <!-- cards serão injetados via JS -->
+        </div>
+      </section>
+    </div>
+
+    <aside class="cart" id="cart" style="display:none">
+      <h3>Seu Pedido</h3>
+      <div class="cart-list" id="cart-list">
+        <!-- itens -->
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+        <div>
+          <div class="muted">Subtotal</div>
+          <strong id="subtotal">R$ 0,00</strong>
+        </div>
+        <div>
+          <button class="btn" id="checkout-btn" onclick="checkout()">Finalizar pedido</button>
+        </div>
+      </div>
+      <footer class="small">Ao finalizar, você será redirecionado para o WhatsApp.</footer>
+    </aside>
+  </main>
+
+  <script>
+    const products = [
+      {id:1, name:'Açaí 300ml', price:9.99, img:'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder'},
+      {id:2, name:'Açaí 500ml', price:14.50, img:'https://images.unsplash.com/photo-1604908177522-d3f2fa1bb378?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder'},
+      {id:3, name:'Açaí com Granola', price:16.00, img:'https://images.unsplash.com/photo-1603570419871-1c6d6b1f4f0c?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder'},
+      {id:4, name:'Açaí com Banana e Leite Condensado', price:18.50, img:'https://images.unsplash.com/photo-1572441710266-9b5b44a7f8d7?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder'},
+      {id:5, name:'Açaí Vegano (Sem Leite)', price:15.00, img:'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=placeholder'}
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('ag_cart') || '[]');
+
+    function formatBRL(v){
+      return v.toLocaleString('pt-BR', {style:'currency',currency:'BRL'});
+    }
+
+    function renderMenu(){
+      const container = document.getElementById('menu-grid');
+      container.innerHTML = '';
+      products.forEach(p => {
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <img src="${p.img}" alt="${p.name}" />
+          <h3>${p.name}</h3>
+          <div class="muted">Descrição curta do produto</div>
+          <div class="price-row">
+            <div><strong>${formatBRL(p.price)}</strong></div>
+            <button class="btn" onclick="addToCart(${p.id})">Adicionar</button>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+
+    function saveCart(){
+      localStorage.setItem('ag_cart', JSON.stringify(cart));
+      document.getElementById('cart-count').innerText = cart.reduce((s,i)=>s+i.qty,0);
+    }
+
+    function addToCart(id){
+      const prod = products.find(p=>p.id===id);
+      const found = cart.find(i=>i.id===id);
+      if(found) found.qty++;
+      else cart.push({id:prod.id,name:prod.name,price:prod.price,img:prod.img,qty:1});
+      saveCart(); renderCart();
+    }
+
+    function renderCart(){
+      const list = document.getElementById('cart-list');
+      list.innerHTML = '';
+      let subtotal = 0;
+      cart.forEach(item => {
+        subtotal += item.price * item.qty;
+        const el = document.createElement('div'); el.className='cart-item';
+        el.innerHTML = `
+          <img src="${item.img}" alt="${item.name}" />
+          <div style="flex:1">
+            <div><strong>${item.name}</strong></div>
+            <div class="muted">${formatBRL(item.price)} • ${item.qty}x</div>
+          </div>
+          <div class="qty">
+            <button onclick="changeQty(${item.id}, -1)">−</button>
+            <div>${item.qty}</div>
+            <button onclick="changeQty(${item.id}, 1)">+</button>
+          </div>`;
+        list.appendChild(el);
+      });
+      document.getElementById('subtotal').innerText = formatBRL(subtotal);
+      document.getElementById('cart-count').innerText = cart.reduce((s,i)=>s+i.qty,0);
+    }
+
+    function changeQty(id,delta){
+      const idx = cart.findIndex(i=>i.id===id);
+      if(idx===-1) return;
+      cart[idx].qty += delta;
+      if(cart[idx].qty<=0) cart.splice(idx,1);
+      saveCart(); renderCart();
+    }
+
+    function toggleCart(){
+      const el = document.getElementById('cart');
+      el.style.display = (el.style.display==='none')? 'block':'none';
+    }
+
+    function scrollToMenu(){
+      document.getElementById('menu').scrollIntoView({behavior:'smooth'});
+    }
+
+    function checkout(){
+      if(cart.length===0){
+        alert('Seu carrinho está vazio.');
+        return;
+      }
+
+      let mensagem = "📦 *Novo pedido!*%0A";
+      let subtotal = 0;
+
+      cart.forEach(item => {
+        subtotal += item.price * item.qty;
+        mensagem += `- ${item.qty}x ${item.name} — ${formatBRL(item.price * item.qty)}%0A`;
+      });
+
+      mensagem += `%0ATotal: *${formatBRL(subtotal)}*%0A%0A`;
+      mensagem += "📝 *Dados do Cliente:*%0A";
+      mensagem += "Nome: ___________%0A";
+      mensagem += "Endereço: ___________%0A";
+      mensagem += "Pagamento: ___________%0A";
+
+      const numero = "5511961249141"; // número do WhatsApp
+      const url = `https://wa.me/${numero}?text=${mensagem}`;
+
+      window.open(url, '_blank');
+    }
+
+    renderMenu(); renderCart();
+  </script>
+</body>
+</html>
